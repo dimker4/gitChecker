@@ -15,8 +15,10 @@ namespace GitChecker
         private const string getAllObjectsSql = @"SELECT name 
                                                      FROM sys.all_objects
                                                     WHERE type in ('P', 'X', 'PC', 'FN', 'FT', 'IF') 
+                                                      AND schema_id = 1 -- dbo
                                                  ORDER BY name;";
         private const string dir = @"C:\git\alice-skills\python\buy-elephant\"; // Директория локальной копии репозитория
+        private const string dbName = "testdb";
 
         public static List<string> files = new List<string>(); // Список файлов гита
         public static List<string> objectsSql = new List<string>(); // Список объектов с сервера sql
@@ -28,27 +30,31 @@ namespace GitChecker
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                DataSet ds = new DataSet(); // Датасет для определения объекта
+                connection.Open();
+                connection.ChangeDatabase(dbName);
+                DataSet ds = new DataSet(); // Датасет для имени объектов в базе
+                DataSet dsObjectText = new DataSet(); // Датасет для определения объекта
                 SqlDataAdapter sqlDataAdapter = new SqlDataAdapter();
 
                 SqlCommand command = new SqlCommand(getAllObjectsSql, connection);
-                command.Connection.Open();
+                sqlDataAdapter.SelectCommand = command;
+                sqlDataAdapter.Fill(ds);
 
-                var a = command.ExecuteScalar();
+                DataTable objects = ds.Tables[0];
 
-                using (SqlDataReader reader = command.ExecuteReader())
+                IEnumerable<DataRow> query =
+                    from obj in objects.AsEnumerable()
+                    select obj;
+
+                foreach (var obj in query) // Бежим по всем объектам базы
                 {
-                    if (reader.Read())
-                    {
-                        objectsSql.Add((string)reader["name"]); // Получим имя объекта
+                    var name = obj.ItemArray[0];
 
-                        SqlCommand sqlCommand = new SqlCommand("sys.sp_helptext", connection); // Получим 
-                        sqlCommand.CommandType = CommandType.StoredProcedure;
-                        sqlCommand.Parameters.AddWithValue("@objname", (string)reader["name"]);
-                        sqlDataAdapter.SelectCommand = sqlCommand;
-                        sqlDataAdapter.Fill(ds);
-
-                    }
+                    SqlCommand sqlCommand = new SqlCommand("sys.sp_helptext", connection); // Получим 
+                    sqlCommand.CommandType = CommandType.StoredProcedure;
+                    sqlCommand.Parameters.AddWithValue("@objname", name);
+                    sqlDataAdapter.SelectCommand = sqlCommand;
+                    sqlDataAdapter.Fill(dsObjectText);
                 }
             }
 
