@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -10,21 +11,47 @@ namespace GitChecker
 {
     class Program
     {
-        public static string dir = @"C:\git\alice-skills\python\buy-elephant\";
+        private const string connectionString = "Data Source=DESKTOP-85CTC0B\\SQLEXPRESS;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        private const string getAllObjectsSql = @"SELECT name 
+                                                     FROM sys.all_objects
+                                                    WHERE type in ('P', 'X', 'PC', 'FN', 'FT', 'IF') 
+                                                 ORDER BY name;";
+        private const string dir = @"C:\git\alice-skills\python\buy-elephant\"; // Директория локальной копии репозитория
+
         public static List<string> files = new List<string>(); // Список файлов гита
-        private const string connectionString = "";
+        public static List<string> objectsSql = new List<string>(); // Список объектов с сервера sql
+        
 
         static void Main(string[] args)
         {
-            Console.WriteLine("begin");
             DirSearch(dir);
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(queryString, connection);
+                DataSet ds = new DataSet(); // Датасет для определения объекта
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter();
+
+                SqlCommand command = new SqlCommand(getAllObjectsSql, connection);
                 command.Connection.Open();
-                command.ExecuteNonQuery();
+
+                var a = command.ExecuteScalar();
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        objectsSql.Add((string)reader["name"]); // Получим имя объекта
+
+                        SqlCommand sqlCommand = new SqlCommand("sys.sp_helptext", connection); // Получим 
+                        sqlCommand.CommandType = CommandType.StoredProcedure;
+                        sqlCommand.Parameters.AddWithValue("@objname", (string)reader["name"]);
+                        sqlDataAdapter.SelectCommand = sqlCommand;
+                        sqlDataAdapter.Fill(ds);
+
+                    }
+                }
             }
+
 
             foreach (string f in files) // Бежим по всем файлам гита
             {

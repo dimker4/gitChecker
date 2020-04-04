@@ -5,3 +5,10 @@ C:\Users\dimker\source\repos\GitChecker\GitChecker\obj\Debug\GitChecker.csprojAs
 C:\Users\dimker\source\repos\GitChecker\GitChecker\obj\Debug\GitChecker.csproj.CoreCompileInputs.cache
 C:\Users\dimker\source\repos\GitChecker\GitChecker\obj\Debug\GitChecker.exe
 C:\Users\dimker\source\repos\GitChecker\GitChecker\obj\Debug\GitChecker.pdb
+C:\git\gitChecker\GitChecker\obj\Debug\GitChecker.csprojAssemblyReference.cache
+C:\git\gitChecker\GitChecker\obj\Debug\GitChecker.csproj.CoreCompileInputs.cache
+C:\git\gitChecker\GitChecker\obj\Debug\GitChecker.exe
+C:\git\gitChecker\GitChecker\obj\Debug\GitChecker.pdb
+C:\git\gitChecker\GitChecker\bin\Debug\GitChecker.exe.config
+C:\git\gitChecker\GitChecker\bin\Debug\GitChecker.exe
+C:\git\gitChecker\GitChecker\bin\Debug\GitChecker.pdb
